@@ -277,7 +277,7 @@ export const MOCK_SETTINGS: AppSettings = {
     phones: ['+91 98765 43210', '+91 90001 12233'],
     whatsapp: '+919876543210',
     bankName: 'State Bank of India',
-    accountName: 'Elkay 2K22 NGO',
+    accountName: 'Elkay 2K22 Batch NGO',
     accountNumber: '12345678901234',
     ifscCode: 'SBIN0012345',
     upiId: 'elkay2k22@sbi',
@@ -285,7 +285,7 @@ export const MOCK_SETTINGS: AppSettings = {
   },
   aboutContent: {
     batchHistory:
-      'Elkay 2K22 is a batch of close friends who studied together and graduated in 2022. What started as a WhatsApp group to share memories soon grew into a mission-driven community. Inspired by the challenges we witnessed around us, we formed a small fund pool to help those in need.\n\nOver the past 2+ years, we have organically grown to 200+ active members across Hyderabad and beyond. Every member contributes monthly, and every rupee is accounted for with full transparency.',
+      'Elkay 2K22 Batch is a batch of close friends who studied together and graduated in 2022. What started as a WhatsApp group to share memories soon grew into a mission-driven community. Inspired by the challenges we witnessed around us, we formed a small fund pool to help those in need.\n\nOver the past 2+ years, we have organically grown to 200+ active members across Hyderabad and beyond. Every member contributes monthly, and every rupee is accounted for with full transparency.',
     ngoVision:
       'A society where no deserving individual is left behind — where compassion, education, and healthcare are accessible to every family, regardless of their economic status.',
     ngoMission:

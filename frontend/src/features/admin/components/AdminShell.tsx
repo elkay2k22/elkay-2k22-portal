@@ -37,7 +37,7 @@ export function AdminShell({ children }: { children?: React.ReactNode }) {
               />
             </span>
             <div className="min-w-0">
-              <p className="text-sm font-bold text-gray-900 leading-tight truncate">Elkay 2K22</p>
+              <p className="text-sm font-bold text-gray-900 leading-tight truncate">Elkay 2K22 Batch</p>
               <p className="text-xs font-medium text-primary-700 truncate">Admin Panel</p>
             </div>
           </div>

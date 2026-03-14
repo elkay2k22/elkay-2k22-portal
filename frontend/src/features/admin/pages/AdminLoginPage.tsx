@@ -53,7 +53,7 @@ export default function AdminLoginPage() {
             <Leaf size={26} />
           </span>
           <h1 className="text-2xl font-bold text-gray-900">Admin Login</h1>
-          <p className="text-sm text-gray-500 mt-1">Elkay 2K22 — Management Portal</p>
+          <p className="text-sm text-gray-500 mt-1">Elkay 2K22 Batch — Management Portal</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-card border border-gray-100 p-6">

@@ -44,7 +44,7 @@ export function Navbar() {
           <Link
             to="/"
             className="flex items-center gap-3.5 flex-shrink-0 group"
-            aria-label="Elkay 2K22 Home"
+            aria-label="Elkay 2K22 Batch Home"
           >
             {/* Gradient ring frame around logo */}
             <div
@@ -65,7 +65,7 @@ export function Navbar() {
             {/* Text */}
             <div className="hidden sm:flex flex-col leading-tight">
               <span className="text-[17px] font-extrabold tracking-[-0.3px] text-[#1a2c6b]">
-                Elkay 2K22
+                Elkay 2K22 Batch
               </span>
               <span className="text-[10.5px] font-semibold uppercase tracking-[1.2px] text-[#4c67d8]">
                 Friends · Help · Care

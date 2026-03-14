@@ -16,7 +16,7 @@ export default function AboutPage() {
       <Container>
         <SectionTitle
           tag="Who We Are"
-          title="About Elkay 2K22"
+          title="About Elkay 2K22 Batch"
           subtitle="Our story, our mission, and the people behind it."
         />
 
