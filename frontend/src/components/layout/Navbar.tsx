@@ -89,7 +89,7 @@ export function Navbar() {
                     'px-4 py-2 rounded-[10px] text-sm font-semibold whitespace-nowrap transition-all duration-200',
                     isActive
                       ? 'bg-[#1a2c6b] text-white shadow-[0_2px_10px_rgba(26,44,107,0.3)]'
-                      : 'text-[#4a5578] hover:text-[#1a2c6b] hover:bg-white hover:shadow-[0_1px_6px_rgba(26,44,107,0.1)]',
+                      : 'text-[#4a5578] hover:text-white hover:bg-[#25a065] hover:shadow-[0_1px_6px_rgba(37,160,101,0.2)]',
                   )
                 }
               >
@@ -146,7 +146,7 @@ export function Navbar() {
                       'px-4 py-3 rounded-xl text-sm font-semibold transition-colors',
                       isActive
                         ? 'bg-[#1a2c6b] text-white'
-                        : 'text-[#4a5578] hover:bg-[#f4f6fb] hover:text-[#1a2c6b]',
+                        : 'text-[#4a5578] hover:bg-[#25a065] hover:text-white',
                     )
                   }
                 >

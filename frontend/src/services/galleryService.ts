@@ -2,7 +2,7 @@ import api from './api';
 import { delay, store } from '@/mocks/mockData';
 import type { GalleryItem, GalleryResponse } from '@/types/gallery';
 
-const USE_MOCK = true;
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 export const galleryService = {
   /** GET /gallery */
@@ -13,7 +13,7 @@ export const galleryService = {
       const items = store.gallery.slice(start, start + limit);
       return { items, total: store.gallery.length };
     }
-    return api.get<GalleryResponse>('/gallery', { params: { page, limit } }).then((r) => r.data);
+    return api.get<GalleryResponse>('/gallery/', { params: { page, limit } }).then((r) => r.data);
   },
 
   /** POST /gallery/verify — compare against stored access code */
@@ -24,7 +24,7 @@ export const galleryService = {
       const valid = code.trim().toUpperCase() === store.settings.downloadAccessCode.toUpperCase();
       return { valid };
     }
-    return api.post<{ valid: boolean }>('/gallery/verify', { code }).then((r) => r.data);
+    return api.post<{ valid: boolean }>('/gallery/verify/', { code }).then((r) => r.data);
   },
 
   /** POST /gallery  (admin) */
@@ -43,7 +43,7 @@ export const galleryService = {
       store.gallery.unshift(item);
       return item;
     }
-    return api.post<GalleryItem>('/gallery', _formData, {
+    return api.post<GalleryItem>('/gallery/', _formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     }).then((r) => r.data);
   },
@@ -55,6 +55,6 @@ export const galleryService = {
       store.gallery = store.gallery.filter((g) => g.id !== id);
       return;
     }
-    return api.delete(`/gallery/${id}`).then((r) => r.data);
+    return api.delete(`/gallery/${id}/`).then((r) => r.data);
   },
 };

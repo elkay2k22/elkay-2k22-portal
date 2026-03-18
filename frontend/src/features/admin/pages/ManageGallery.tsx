@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -6,12 +6,10 @@ import { AdminShell } from '../components/AdminShell';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
-import { useFetch } from '@/hooks/useFetch';
 import { galleryService } from '@/services/galleryService';
-import { store } from '@/mocks/mockData';
-import type { GalleryItem } from '@/types/gallery';
 import { ErrorState, EmptyState, Skeleton } from '@/components/ui/Loader';
-import { Image, Trash2, Plus, Play, Lock, UploadCloud } from 'lucide-react';
+import { Image, Trash2, Plus, Play, Lock, UploadCloud, ChevronLeft, ChevronRight } from 'lucide-react';
+import type { GalleryItem } from '@/types/gallery';
 
 const schema = z.object({
   title:              z.string().min(2, 'Title is required'),
@@ -19,13 +17,90 @@ const schema = z.object({
   accessCodeRequired: z.boolean(),
 });
 type FormValues = z.infer<typeof schema>;
+const PAGE_SIZE = 20;
+
+function AdminMediaTile({ item, onDelete }: { item: GalleryItem; onDelete: (id: string) => void }) {
+  const [imgError, setImgError] = useState(false);
+
+  return (
+    <div className="group relative rounded-2xl overflow-hidden aspect-square bg-gray-100">
+      {!imgError && item.thumbnailUrl ? (
+        <img
+          src={item.thumbnailUrl}
+          alt={item.title}
+          className="w-full h-full object-cover"
+          onError={() => setImgError(true)}
+        />
+      ) : item.type === 'video' ? (
+        <video
+          src={item.url}
+          muted
+          preload="metadata"
+          playsInline
+          className="w-full h-full object-cover"
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center text-gray-300">
+          <Image size={28} />
+        </div>
+      )}
+
+      {item.type === 'video' && (
+        <div className="absolute top-2 left-2 bg-black/60 rounded-full p-1">
+          <Play size={10} className="text-white fill-white" />
+        </div>
+      )}
+      {item.accessCodeRequired && (
+        <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1">
+          <Lock size={10} className="text-white" />
+        </div>
+      )}
+      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+        <Button size="sm" variant="danger" onClick={() => onDelete(item.id)}>
+          <Trash2 size={14} />
+        </Button>
+      </div>
+    </div>
+  );
+}
 
 export default function ManageGallery() {
-  const { data, loading, error, refetch } = useFetch(() => galleryService.getAll());
+  const [items, setItems]                 = useState<GalleryItem[]>([]);
+  const [page, setPage]                   = useState(1);
+  const [total, setTotal]                 = useState(0);
+  const [loading, setLoading]             = useState(true);
+  const [error, setError]                 = useState<string | null>(null);
   const [modalOpen, setModalOpen]         = useState(false);
   const [preview, setPreview]             = useState<string | null>(null);
+  const [selectedFile, setSelectedFile]   = useState<File | null>(null);
   const [fileError, setFileError]         = useState('');
   const fileRef                           = useRef<HTMLInputElement>(null);
+
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  const fetchPage = async (targetPage: number) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await galleryService.getAll(targetPage, PAGE_SIZE);
+      setItems(data.items);
+      setTotal(data.total);
+      setPage(targetPage);
+    } catch (err: unknown) {
+      const message =
+        (err as { response?: { data?: { detail?: string }; message?: string }; message?: string })
+          ?.response?.data?.detail ??
+        (err as { message?: string })?.message ??
+        'Unable to load gallery';
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchPage(1);
+  }, []);
 
   const {
     register,
@@ -40,18 +115,25 @@ export default function ManageGallery() {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     setFileError('');
-    if (!file) { setPreview(null); return; }
+    if (!file) {
+      setPreview(null);
+      setSelectedFile(null);
+      return;
+    }
     if (file.size > 20 * 1024 * 1024) {
       setFileError('File too large — max 20 MB');
       setPreview(null);
+      setSelectedFile(null);
       return;
     }
+    setSelectedFile(file);
     setPreview(URL.createObjectURL(file));
   };
 
   const handleClose = () => {
     reset();
     setPreview(null);
+    setSelectedFile(null);
     setFileError('');
     if (fileRef.current) fileRef.current.value = '';
     setModalOpen(false);
@@ -60,24 +142,39 @@ export default function ManageGallery() {
   const handleDelete = async (id: string) => {
     if (!window.confirm('Remove this media?')) return;
     await galleryService.remove(id);
-    refetch();
+    const nextTotal = Math.max(0, total - 1);
+    const nextTotalPages = Math.max(1, Math.ceil(nextTotal / PAGE_SIZE));
+    fetchPage(Math.min(page, nextTotalPages));
   };
 
-  const onSubmit = async (values: FormValues) => {
-    if (!preview) { setFileError('Please select a file'); return; }
+  const handlePageChange = (targetPage: number) => {
+    if (targetPage < 1 || targetPage > totalPages || targetPage === page || loading) {
+      return;
+    }
+    fetchPage(targetPage);
+  };
 
-    const item: GalleryItem = {
-      id:                 String(Date.now()),
-      title:              values.title,
-      type:               values.type,
-      url:                preview,
-      thumbnailUrl:       preview,
-      accessCodeRequired: values.accessCodeRequired,
-      uploadedAt:         new Date().toISOString(),
-    };
-    store.gallery.unshift(item);
+  const startPage = Math.max(1, Math.min(totalPages - 4, page - 2));
+  const pageButtons = Array.from(
+    { length: Math.min(5, totalPages) },
+    (_, idx) => startPage + idx,
+  ).filter((pageNum) => pageNum <= totalPages);
+
+  const onSubmit = async (values: FormValues) => {
+    if (!selectedFile) {
+      setFileError('Please select a file');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', selectedFile);
+    formData.append('title', values.title);
+    formData.append('type', values.type);
+    formData.append('accessCodeRequired', String(values.accessCodeRequired));
+
+    await galleryService.upload(formData);
     handleClose();
-    refetch();
+    fetchPage(page);
   };
 
   return (
@@ -94,38 +191,58 @@ export default function ManageGallery() {
         </div>
 
         {error ? (
-          <ErrorState message={error} onRetry={refetch} />
+          <ErrorState message={error} onRetry={() => fetchPage(page)} />
         ) : loading ? (
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {Array.from({ length: 8 }).map((_, i) => (
               <Skeleton key={i} className="aspect-square rounded-2xl" />
             ))}
           </div>
-        ) : !data?.items.length ? (
+        ) : !items.length ? (
           <EmptyState icon={<Image size={48} />} title="No media yet" description="Click 'Upload Media' to add the first photo." />
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-            {data.items.map((item) => (
-              <div key={item.id} className="group relative rounded-2xl overflow-hidden aspect-square bg-gray-100">
-                {item.thumbnailUrl ? (
-                  <img src={item.thumbnailUrl} alt={item.title} className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-gray-300">
-                    {item.type === 'video' ? <Play size={28} /> : <Image size={28} />}
-                  </div>
-                )}
-                {item.accessCodeRequired && (
-                  <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1">
-                    <Lock size={10} className="text-white" />
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Button size="sm" variant="danger" onClick={() => handleDelete(item.id)}>
-                    <Trash2 size={14} />
+          <div className="space-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {items.map((item) => (
+                <AdminMediaTile key={item.id} item={item} onDelete={handleDelete} />
+              ))}
+            </div>
+
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(page - 1)}
+                  disabled={page <= 1}
+                  leftIcon={<ChevronLeft size={14} />}
+                >
+                  Prev
+                </Button>
+
+                {pageButtons.map((pageNum) => (
+                  <Button
+                    key={pageNum}
+                    variant={pageNum === page ? 'primary' : 'outline'}
+                    size="sm"
+                    onClick={() => handlePageChange(pageNum)}
+                  >
+                    {pageNum}
                   </Button>
-                </div>
+                ))}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePageChange(page + 1)}
+                  disabled={page >= totalPages}
+                  rightIcon={<ChevronRight size={14} />}
+                >
+                  Next
+                </Button>
+
               </div>
-            ))}
+            )}
           </div>
         )}
       </div>

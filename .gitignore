@@ -41,3 +41,53 @@ coverage/
 # Misc
 *.tmp
 *.swp
+
+# Uploaded media
+uploads/
+backend/uploads/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+
+# VSCode
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+
+# TypeScript
+*.tsbuildinfo
+
+# Ignore environment files except example
+*.env
+!.env.example
+frontend/.env
+frontend/.env.*
+!frontend/.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+
+# Ignore lock files
+frontend/package-lock.json
+backend/poetry.lock
+backend/Pipfile.lock
+
+# Ignore build output
+frontend/dist/
+backend/dist/
+
+# Ignore node_modules
+frontend/node_modules/
+
+# Ignore empty folder keepers
+!backend/.gitkeep
+
+

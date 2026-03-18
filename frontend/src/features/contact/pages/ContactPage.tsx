@@ -7,9 +7,46 @@ import { useFetch } from '@/hooks/useFetch';
 import { settingsService } from '@/services/settingsService';
 import { SkeletonText, ErrorState } from '@/components/ui/Loader';
 
+const buildWhatsappHref = (rawValue?: string): string | null => {
+  if (!rawValue) {
+    return null;
+  }
+
+  let digits = rawValue.replace(/\D/g, '');
+  if (!digits) {
+    return null;
+  }
+
+  if (digits.startsWith('00')) {
+    digits = digits.slice(2);
+  }
+
+  // Local India format like 09876543210 -> 919876543210
+  if (digits.length === 11 && digits.startsWith('0')) {
+    digits = `91${digits.slice(1)}`;
+  }
+
+  // Support admin input without country code by assuming India (+91) for 10-digit numbers.
+  if (digits.length === 10) {
+    digits = `91${digits}`;
+  }
+
+  // Fix malformed +91 format with trunk zero: +91 09876543210 -> 919876543210
+  if (digits.startsWith('91') && digits.length === 12 && digits[2] === '0') {
+    digits = `91${digits.slice(3)}`;
+  }
+
+  if (digits.length < 11 || digits.length > 15) {
+    return null;
+  }
+
+  return `https://api.whatsapp.com/send?phone=${digits}`;
+};
+
 export default function ContactPage() {
   const { data, loading, error, refetch } = useFetch(() => settingsService.get());
   const contact = data?.contactInfo;
+  const whatsappHref = buildWhatsappHref(contact?.whatsapp);
 
   return (
     <div className="section-padding">
@@ -49,9 +86,9 @@ export default function ContactPage() {
                   </ul>
                 )}
 
-                {!loading && contact?.whatsapp && (
+                {!loading && whatsappHref && (
                   <a
-                    href={`https://wa.me/${contact.whatsapp.replace(/\D/g, '')}`}
+                    href={whatsappHref}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="mt-5 flex items-center gap-2 px-4 py-3 rounded-xl bg-primary-50 text-primary-700 font-medium text-sm hover:bg-primary-100 transition-colors"

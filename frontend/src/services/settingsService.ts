@@ -2,7 +2,7 @@ import api from './api';
 import { delay, store } from '@/mocks/mockData';
 import type { AppSettings, FundSummary, ContactInfo, AboutContent } from '@/types/settings';
 
-const USE_MOCK = true;
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 // Mock admin credentials (replace with real auth when backend is ready)
 const MOCK_ADMIN = { username: 'admin', password: 'admin123' };
@@ -14,7 +14,7 @@ export const settingsService = {
       await delay();
       return { ...store.settings };
     }
-    return api.get<AppSettings>('/settings').then((r) => r.data);
+    return api.get<AppSettings>('/settings/').then((r) => r.data);
   },
 
   /** PATCH /settings/fund  (admin) */
@@ -30,7 +30,7 @@ export const settingsService = {
       };
       return store.settings.fundSummary;
     }
-    return api.patch<FundSummary>('/settings/fund', data).then((r) => r.data);
+    return api.patch<FundSummary>('/settings/fund/', data).then((r) => r.data);
   },
 
   /** PATCH /settings/contact  (admin) */
@@ -40,7 +40,7 @@ export const settingsService = {
       store.settings.contactInfo = { ...store.settings.contactInfo, ...data };
       return store.settings.contactInfo;
     }
-    return api.patch<ContactInfo>('/settings/contact', data).then((r) => r.data);
+    return api.patch<ContactInfo>('/settings/contact/', data).then((r) => r.data);
   },
 
   /** PATCH /settings/about  (admin) */
@@ -50,7 +50,7 @@ export const settingsService = {
       store.settings.aboutContent = { ...store.settings.aboutContent, ...data };
       return store.settings.aboutContent;
     }
-    return api.patch<AboutContent>('/settings/about', data).then((r) => r.data);
+    return api.patch<AboutContent>('/settings/about/', data).then((r) => r.data);
   },
 
   /** PATCH /settings/access-code  (admin) */
@@ -60,7 +60,22 @@ export const settingsService = {
       store.settings.downloadAccessCode = code;
       return;
     }
-    return api.patch('/settings/access-code', { code }).then((r) => r.data);
+    return api.patch('/settings/access-code/', { code }).then((r) => r.data);
+  },
+
+  /** POST /settings/upi-qr  (admin) */
+  uploadUpiQr: async (file: File): Promise<{ upiQrUrl: string }> => {
+    if (USE_MOCK) {
+      await delay(500);
+      const mockUrl = URL.createObjectURL(file);
+      store.settings.contactInfo.upiQrUrl = mockUrl;
+      return { upiQrUrl: mockUrl };
+    }
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post<{ upiQrUrl: string }>('/settings/upi-qr/', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    }).then((r) => r.data);
   },
 
   /** POST /auth/login */
@@ -72,6 +87,6 @@ export const settingsService = {
       }
       throw Object.assign(new Error('Unauthorized'), { response: { status: 401 } });
     }
-    return api.post<{ access_token: string }>('/auth/login', { username, password }).then((r) => r.data);
+    return api.post<{ access_token: string }>('/auth/login/', { username, password }).then((r) => r.data);
   },
 };

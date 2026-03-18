@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Heart, Users, Star } from 'lucide-react';
+import { ArrowRight, Heart, Star } from 'lucide-react';
 import { clsx } from 'clsx';
 
 const btnBase = 'inline-flex items-center justify-center gap-2 rounded-xl font-semibold h-[46px] px-6 text-[13.5px] transition-all duration-200 select-none';
@@ -57,6 +57,22 @@ export function HeroSection() {
             We Care.
           </h1>
 
+          {/* Mobile/tablet image */}
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.55 }}
+            className="lg:hidden w-full max-w-xl mx-auto my-5"
+          >
+            <div className="relative overflow-hidden rounded-2xl border border-white/20 shadow-[0_16px_36px_rgba(7,13,36,0.4)]">
+              <img
+                src="/Hero.jpeg"
+                alt="Elkay 2K22 batch photo"
+                className="block w-full h-auto"
+              />
+            </div>
+          </motion.div>
+
           {/* Ornament divider before quote */}
           <div className="flex items-center gap-3 mb-4">
             <div className="h-px flex-1 bg-gradient-to-r from-[#25a065]/50 to-transparent" />
@@ -97,27 +113,6 @@ export function HeroSection() {
             </Link>
           </div>
 
-          {/* Stats */}
-          <div className="flex items-center">
-            {[
-              { num: '200+', label: 'Members',         icon: <Users size={15} className="text-white/60" /> },
-              { num: '50+',  label: 'Families Helped', icon: <Heart size={15} className="fill-[#4cd69a] text-[#4cd69a]" /> },
-            ].map((s, i) => (
-              <div key={s.label} className="flex items-center">
-                {i > 0 && <div className="w-px h-8 bg-white/12 mx-[18px]" />}
-                <div className="flex items-center gap-2.5">
-                  <div className="w-[34px] h-[34px] rounded-[10px] bg-white/[0.08]
-                                  flex items-center justify-center flex-shrink-0">
-                    {s.icon}
-                  </div>
-                  <div>
-                    <div className="text-[20px] font-black text-white leading-none">{s.num}</div>
-                    <div className="text-[10.5px] text-white/45 font-medium mt-0.5">{s.label}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </motion.div>
 
         {/* ── RIGHT — image with decorative frame ── */}

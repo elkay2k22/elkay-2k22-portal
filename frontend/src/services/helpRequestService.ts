@@ -2,7 +2,7 @@ import api from './api';
 import { delay, store } from '@/mocks/mockData';
 import type { HelpRequest, HelpRequestFormValues } from '@/types/helpRequest';
 
-const USE_MOCK = true;
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 export const helpRequestService = {
   /** GET /help-requests (admin) */

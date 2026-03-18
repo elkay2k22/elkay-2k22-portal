@@ -2,31 +2,59 @@
  * Formats an ISO date string for display.
  * @example formatDate('2024-01-15') // 'January 15, 2024'
  */
-export function formatDate(isoString: string): string {
+const toValidDate = (value: string | null | undefined): Date | null => {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed;
+};
+
+export function formatDate(isoString: string | null | undefined): string {
+  const date = toValidDate(isoString);
+  if (!date) {
+    return '';
+  }
+
   return new Intl.DateTimeFormat('en-IN', {
     day: 'numeric',
     month: 'long',
     year: 'numeric',
-  }).format(new Date(isoString));
+  }).format(date);
 }
 
 /**
  * Returns a short date: 'Jan 15, 2024'
  */
-export function formatShortDate(isoString: string): string {
+export function formatShortDate(isoString: string | null | undefined): string {
+  const date = toValidDate(isoString);
+  if (!date) {
+    return '';
+  }
+
   return new Intl.DateTimeFormat('en-IN', {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-  }).format(new Date(isoString));
+  }).format(date);
 }
 
 /**
  * Returns a relative label like "3 days ago" or "in 2 weeks".
  */
-export function timeAgo(isoString: string): string {
+export function timeAgo(isoString: string | null | undefined): string {
+  const date = toValidDate(isoString);
+  if (!date) {
+    return 'Unknown time';
+  }
+
   const now = Date.now();
-  const then = new Date(isoString).getTime();
+  const then = date.getTime();
   const diff = Math.round((then - now) / 1000);
 
   const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });

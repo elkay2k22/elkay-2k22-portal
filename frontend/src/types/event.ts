@@ -1,7 +1,7 @@
 export interface Event {
   id: string;
   title: string;
-  date: string;         // ISO date string
+  date?: string;        // ISO date string (optional for completed events)
   location: string;
   description: string;
   amountSpent: number;
@@ -13,7 +13,7 @@ export interface Event {
 
 export interface CreateEventPayload {
   title: string;
-  date: string;
+  date?: string;
   location: string;
   description: string;
   amountSpent: number;

@@ -1,7 +1,9 @@
 fastapi
 uvicorn
-sqlalchemy
 pydantic
 python-multipart
 passlib[bcrypt]
 python-jose
+pymongo
+python-dotenv
+json5
