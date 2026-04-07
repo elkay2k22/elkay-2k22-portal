@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { HandHeart } from 'lucide-react';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Loader';
 import { formatCurrency } from '@/utils/formatCurrency';
@@ -10,77 +10,48 @@ interface FundDashboardProps {
   loading?: boolean;
 }
 
-const statItems = (data: FundSummary) => [
-  {
-    label:    'Total Collected',
-    value:    data.totalCollected,
-    icon:     <TrendingUp size={22} className="text-blue-600" />,
-    bg:       'bg-blue-50',
-    color:    'text-blue-700',
-  },
-  {
-    label:    'Total Utilized',
-    value:    data.totalUtilized,
-    icon:     <TrendingDown size={22} className="text-amber-600" />,
-    bg:       'bg-amber-50',
-    color:    'text-amber-700',
-  },
-  {
-    label:    'Available Balance',
-    value:    data.availableBalance,
-    icon:     <Wallet size={22} className="text-blue-600" />,
-    bg:       'bg-blue-50',
-    color:    'text-blue-700',
-  },
-];
-
 export function FundDashboard({ data, loading = false }: FundDashboardProps) {
   if (loading) {
     return (
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {[1, 2, 3].map((i) => (
-          <Skeleton key={i} className="h-32 rounded-2xl" />
-        ))}
-      </div>
+      <Skeleton className="h-40 rounded-3xl" />
     );
   }
 
   if (!data) return null;
 
-  const total = data.totalCollected || 1;
+  const donated = data.totalUtilized;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      {statItems(data).map((item, idx) => (
-        <motion.div
-          key={item.label}
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: idx * 0.1, duration: 0.4 }}
-        >
-          <Card className="flex flex-col gap-3">
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${item.bg}`}>
-              {item.icon}
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 font-medium mb-0.5">{item.label}</p>
-              <p className={`text-2xl font-bold ${item.color}`}>
-                {formatCurrency(item.value)}
-              </p>
-            </div>
-            {/* Mini progress bar for utilization */}
-            <div className="h-1.5 rounded-full bg-gray-100 overflow-hidden">
-              <div
-                className={`h-full rounded-full transition-all duration-700 ${
-                  idx === 0 ? 'bg-blue-500' :
-                  idx === 1 ? 'bg-amber-400' : 'bg-blue-400'
-                }`}
-                style={{ width: `${Math.min((item.value / total) * 100, 100)}%` }}
-              />
-            </div>
-          </Card>
-        </motion.div>
-      ))}
-    </div>
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45 }}
+    >
+      <Card className="relative overflow-hidden border border-primary-100 bg-white text-gray-900 shadow-card">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary-600 via-primary-500 to-[#25a065]" />
+        <div className="pointer-events-none absolute -right-12 -top-14 h-40 w-40 rounded-full bg-primary-100/70" />
+        <div className="pointer-events-none absolute -bottom-16 right-20 h-44 w-44 rounded-full bg-[#25a065]/10" />
+
+        <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.22em] text-primary-600">Donation</p>
+            <h3 className="mt-2 text-3xl font-extrabold leading-tight text-primary-700 md:text-4xl">
+              {formatCurrency(donated)}
+            </h3>
+            <p className="mt-2 text-sm text-gray-600">
+              Amount directly contributed to activities and help requests.
+            </p>
+          </div>
+
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary-50">
+            <HandHeart size={28} className="text-primary-600" />
+          </div>
+        </div>
+
+        <div className="relative z-10 mt-5 h-1.5 w-full overflow-hidden rounded-full bg-gray-100">
+          <div className="h-full w-4/5 rounded-full bg-primary-500" />
+        </div>
+      </Card>
+    </motion.div>
   );
 }

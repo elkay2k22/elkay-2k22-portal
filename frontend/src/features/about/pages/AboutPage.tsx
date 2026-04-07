@@ -74,7 +74,7 @@ export default function AboutPage() {
                     </h3>
                     <div className="grid grid-cols-2 gap-3">
                       {[
-                        { label: 'Active Members', value: '200+', icon: <UsersRound size={15} className="text-[#1a2c6b]" />, bg: '#eef1fb', valColor: '#1a2c6b' },
+                        { label: 'Active Members', value: '100+', icon: <UsersRound size={15} className="text-[#1a2c6b]" />, bg: '#eef1fb', valColor: '#1a2c6b' },
                         { label: 'Families Helped', value: '50+',  icon: <HandCoins size={15} className="text-[#25a065]" />,  bg: '#e8f5ee', valColor: '#25a065' },
                         { label: 'Year Started',    value: '2022', icon: <BookOpen  size={15} className="text-[#e5a000]" />,  bg: '#fff8e8', valColor: '#e5a000', span: true },
                       ].map(({ label, value, icon, bg, valColor, span }) => (

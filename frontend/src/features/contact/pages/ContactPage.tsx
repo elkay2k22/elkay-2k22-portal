@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Phone, MessageCircle, Building2, CreditCard, QrCode } from 'lucide-react';
+import { Phone, MessageCircle, Building2, CreditCard, QrCode, HandHeart } from 'lucide-react';
 import { Container } from '@/components/layout/Container';
 import { SectionTitle } from '@/components/layout/SectionTitle';
 import { Card, CardTitle } from '@/components/ui/Card';
@@ -43,10 +44,43 @@ const buildWhatsappHref = (rawValue?: string): string | null => {
   return `https://api.whatsapp.com/send?phone=${digits}`;
 };
 
+const buildUpiDonateHref = (upiId?: string, accountName?: string): string | null => {
+  const pa = (upiId ?? '').trim();
+  if (!pa) {
+    return null;
+  }
+
+  const params = new URLSearchParams({
+    pa,
+    pn: (accountName ?? 'Elkay 2K22').trim() || 'Elkay 2K22',
+    tn: 'Donation for community support',
+    cu: 'INR',
+  });
+
+  return `upi://pay?${params.toString()}`;
+};
+
 export default function ContactPage() {
   const { data, loading, error, refetch } = useFetch(() => settingsService.get());
+  const [copied, setCopied] = useState(false);
   const contact = data?.contactInfo;
   const whatsappHref = buildWhatsappHref(contact?.whatsapp);
+  const donateHref = buildUpiDonateHref(contact?.upiId, contact?.accountName);
+
+  const copyUpiId = async () => {
+    const upiId = (contact?.upiId ?? '').trim();
+    if (!upiId) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(upiId);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1600);
+    } catch {
+      setCopied(false);
+    }
+  };
 
   return (
     <div className="section-padding">
@@ -147,6 +181,26 @@ export default function ContactPage() {
                         </p>
                         <p className="text-xs text-gray-400 mt-1">
                           Use any UPI app — GPay, PhonePe, Paytm, etc.
+                        </p>
+                        {donateHref && (
+                          <a
+                            href={donateHref}
+                            className="mt-3 inline-flex items-center gap-2 rounded-xl bg-primary-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-primary-700 sm:hidden"
+                          >
+                            <HandHeart size={16} /> Donate Now
+                          </a>
+                        )}
+                        {!!contact?.upiId && (
+                          <button
+                            type="button"
+                            onClick={copyUpiId}
+                            className="mt-3 hidden items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-50 sm:inline-flex"
+                          >
+                            {copied ? 'Copied UPI ID' : 'Copy UPI ID'}
+                          </button>
+                        )}
+                        <p className="text-[11px] text-gray-400 mt-2">
+                          Mobile: use Donate button. Desktop: copy UPI ID or scan QR.
                         </p>
                       </div>
                       {contact?.upiQrUrl ? (

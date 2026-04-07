@@ -32,8 +32,8 @@ export default function HomePage() {
         <Container>
           <SectionTitle
             tag="Transparency"
-            title="Fund Overview"
-            subtitle="A transparent view of every rupee collected and utilized for our community."
+            title="Total Donated"
+            subtitle="A clear snapshot of how much has been donated to community support activities."
           />
           {settingsError ? (
             <ErrorState message={settingsError} onRetry={retrySettings} />

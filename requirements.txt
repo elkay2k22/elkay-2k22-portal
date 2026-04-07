@@ -7,3 +7,4 @@ python-jose
 pymongo
 python-dotenv
 json5
+cloudinary
