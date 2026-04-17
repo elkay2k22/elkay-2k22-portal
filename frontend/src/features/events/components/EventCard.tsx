@@ -1,7 +1,5 @@
 import { motion } from 'framer-motion';
 import { Calendar, MapPin, IndianRupee, Tag } from 'lucide-react';
-import { Card } from '@/components/ui/Card';
-import { Badge } from '@/components/ui/Badge';
 import { formatDate } from '@/utils/dateFormatter';
 import { formatCurrency } from '@/utils/formatCurrency';
 import type { Event } from '@/types/event';

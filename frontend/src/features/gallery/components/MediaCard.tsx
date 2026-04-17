@@ -1,7 +1,6 @@
 import { useState, type KeyboardEvent } from 'react';
-import { Play, Image, Download } from 'lucide-react';
+import { Play, Image} from 'lucide-react';
 import { motion } from 'framer-motion';
-import { clsx } from 'clsx';
 import type { GalleryItem } from '@/types/gallery';
 
 interface MediaCardProps {
