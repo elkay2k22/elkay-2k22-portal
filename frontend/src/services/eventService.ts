@@ -18,6 +18,10 @@ const normalizeMediaUrl = (url: string): string => {
     return raw;
   }
 
+  if (/^https?:\/\/(localhost|127\.0\.0\.1)(?::\d+)?/i.test(raw)) {
+    return raw.replace(/^https?:\/\/(localhost|127\.0\.0\.1)(?::\d+)?/i, API_ORIGIN);
+  }
+
   if (/^https?:\/\/0\.0\.0\.0(?::\d+)?/i.test(raw)) {
     return raw.replace(/^https?:\/\/0\.0\.0\.0(?::\d+)?/i, API_ORIGIN);
   }

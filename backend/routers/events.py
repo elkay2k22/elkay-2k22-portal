@@ -1,8 +1,11 @@
+import os
 from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
 
 from bson import ObjectId
+import cloudinary
+import cloudinary.uploader
 from fastapi import APIRouter, File, HTTPException, Request, UploadFile
 from pymongo import ReturnDocument
 
@@ -13,6 +16,24 @@ UPLOADS_DIR = Path(__file__).resolve().parent.parent / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
 
 ALLOWED_IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+
+CLOUDINARY_CLOUD_NAME = os.getenv("CLOUDINARY_CLOUD_NAME", "").strip()
+CLOUDINARY_API_KEY = os.getenv("CLOUDINARY_API_KEY", "").strip()
+CLOUDINARY_API_SECRET = os.getenv("CLOUDINARY_API_SECRET", "").strip()
+CLOUDINARY_FOLDER = os.getenv("CLOUDINARY_FOLDER", "elkay2k22/gallery").strip()
+CLOUDINARY_EVENTS_FOLDER = f"{CLOUDINARY_FOLDER.rstrip('/')}/events"
+
+CLOUDINARY_ENABLED = bool(
+    CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET
+)
+
+if CLOUDINARY_ENABLED:
+    cloudinary.config(
+        cloud_name=CLOUDINARY_CLOUD_NAME,
+        api_key=CLOUDINARY_API_KEY,
+        api_secret=CLOUDINARY_API_SECRET,
+        secure=True,
+    )
 
 @router.get("/")
 def get_events(page: int = 1, limit: int = 10):
@@ -47,10 +68,26 @@ async def upload_event_images(request: Request, files: list[UploadFile] = File(.
         if ext not in ALLOWED_IMAGE_EXTENSIONS:
             continue
 
-        filename = f"event-{uuid4()}{ext}"
-        target_path = UPLOADS_DIR / filename
-        target_path.write_bytes(await file.read())
-        file_url = f"/uploads/{filename}"
+        content = await file.read()
+        if CLOUDINARY_ENABLED:
+            upload_result = cloudinary.uploader.upload(
+                content,
+                folder=CLOUDINARY_EVENTS_FOLDER,
+                resource_type="image",
+                use_filename=False,
+                unique_filename=True,
+                overwrite=False,
+                filename_override=file.filename,
+            )
+            file_url = upload_result.get("secure_url") or upload_result.get("url")
+            if not file_url:
+                raise HTTPException(status_code=500, detail="Cloud image upload failed")
+        else:
+            filename = f"event-{uuid4()}{ext}"
+            target_path = UPLOADS_DIR / filename
+            target_path.write_bytes(content)
+            file_url = f"/uploads/{filename}"
+
         urls.append(file_url)
 
     if not urls:
