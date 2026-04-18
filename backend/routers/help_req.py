@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 from pymongo import ReturnDocument
 
 from backend.mongo import db, serialize_doc
+from backend.services.mail_notifications import send_help_request_notification
 
 router = APIRouter()
 
@@ -19,6 +20,12 @@ def create_request(data:dict):
     }
     inserted = db.help_requests.insert_one(req)
     created = db.help_requests.find_one({"_id": inserted.inserted_id})
+
+    # Notification failures should not block request creation.
+    sent, reason = send_help_request_notification(created or req)
+    if not sent:
+        print(f"[help-request-email] skipped/failed: {reason}")
+
     return serialize_doc(created)
 
 @router.get("/")
