@@ -4,18 +4,43 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { AdminShell } from '../components/AdminShell';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import { Input, Textarea } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { galleryService } from '@/services/galleryService';
 import { ErrorState, EmptyState, Skeleton } from '@/components/ui/Loader';
 import { Image, Trash2, Plus, Play, Lock, UploadCloud, ChevronLeft, ChevronRight } from 'lucide-react';
 import type { GalleryItem } from '@/types/gallery';
 
-const schema = z.object({
-  title:              z.string().min(2, 'Title is required'),
-  type:               z.enum(['image', 'video']),
-  accessCodeRequired: z.boolean(),
-});
+const schema = z
+  .object({
+    title: z.string().min(2, 'Title is required'),
+    type: z.enum(['image', 'video']),
+    category: z.enum(['school_diaries', 'farewell', 'gatherings']),
+    isImportantGathering: z.boolean(),
+    gatheringDate: z.string().optional(),
+    description: z.string().optional(),
+    accessCodeRequired: z.boolean(),
+  })
+  .superRefine((values, ctx) => {
+    const isImportantGathering = values.category === 'gatherings' && values.isImportantGathering;
+
+    if (isImportantGathering && !values.gatheringDate?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Date is required for important Gatherings',
+        path: ['gatheringDate'],
+      });
+    }
+
+    if (isImportantGathering && !values.description?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Description is required for important Gatherings',
+        path: ['description'],
+      });
+    }
+  });
+
 type FormValues = z.infer<typeof schema>;
 const PAGE_SIZE = 20;
 
@@ -106,11 +131,21 @@ export default function ManageGallery() {
     register,
     handleSubmit,
     reset,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { type: 'image', accessCodeRequired: true },
+    defaultValues: {
+      type: 'image',
+      category: 'school_diaries',
+      isImportantGathering: false,
+      gatheringDate: '',
+      description: '',
+      accessCodeRequired: true,
+    },
   });
+  const selectedCategory = watch('category');
+  const isImportantGathering = watch('isImportantGathering');
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -170,6 +205,14 @@ export default function ManageGallery() {
     formData.append('file', selectedFile);
     formData.append('title', values.title);
     formData.append('type', values.type);
+    formData.append('category', values.category);
+    if (values.category === 'gatherings') {
+      formData.append('isImportantGathering', String(values.isImportantGathering));
+      if (values.isImportantGathering) {
+        formData.append('gatheringDate', values.gatheringDate?.trim() ?? '');
+        formData.append('description', values.description?.trim() ?? '');
+      }
+    }
     formData.append('accessCodeRequired', String(values.accessCodeRequired));
 
     await galleryService.upload(formData);
@@ -267,6 +310,50 @@ export default function ManageGallery() {
               <option value="video">Video</option>
             </select>
           </div>
+
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Category</label>
+            <select
+              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
+              {...register('category')}
+            >
+              <option value="school_diaries">School Diaries</option>
+              <option value="farewell">Farewell</option>
+              <option value="gatherings">Gatherings</option>
+            </select>
+          </div>
+
+          {selectedCategory === 'gatherings' && (
+            <div className="space-y-3 rounded-xl border border-gray-200 p-3.5 bg-gray-50">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="w-4 h-4 rounded accent-blue-600"
+                  {...register('isImportantGathering')}
+                />
+                <span className="text-sm text-gray-700">Mark as important gathering</span>
+              </label>
+
+              {isImportantGathering && (
+                <>
+                  <Input
+                    type="date"
+                    label="Gathering Date"
+                    error={errors.gatheringDate?.message}
+                    {...register('gatheringDate')}
+                  />
+
+                  <Textarea
+                    label="Description"
+                    placeholder="Write a short note about this important gathering..."
+                    error={errors.description?.message}
+                    rows={3}
+                    {...register('description')}
+                  />
+                </>
+              )}
+            </div>
+          )}
 
           {/* File picker */}
           <div className="flex flex-col gap-1">

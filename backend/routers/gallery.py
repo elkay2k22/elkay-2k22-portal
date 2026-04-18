@@ -15,6 +15,9 @@ from backend.mongo import db, get_settings_doc, serialize_doc
 
 router = APIRouter()
 
+ALLOWED_MEDIA_TYPES = {"image", "video"}
+ALLOWED_CATEGORIES = {"school_diaries", "farewell", "gatherings"}
+
 UPLOADS_DIR = Path(__file__).resolve().parent.parent / "uploads"
 UPLOADS_DIR.mkdir(exist_ok=True)
 
@@ -88,13 +91,31 @@ def _build_download_name(title: str, ext: str) -> str:
     safe_title = "".join(ch for ch in title if ch.isalnum() or ch in ("-", "_", " ")).strip() or "media"
     return f"{safe_title}{normalized_ext}"
 
+
+def _clean_optional(value: str | None) -> str | None:
+    if value is None:
+        return None
+    cleaned = value.strip()
+    return cleaned if cleaned else None
+
 @router.get("/")
-def get_gallery(page:int=1, limit:int=20):
+def get_gallery(page: int = 1, limit: int = 20, category: str | None = None):
+    if category and category not in ALLOWED_CATEGORIES:
+        raise HTTPException(status_code=422, detail="Invalid gallery category")
+
     skip = (page - 1) * limit
-    cursor = db.gallery.find().sort("uploadedAt", -1).skip(skip).limit(limit)
+
+    query = {}
+    # Backward compatibility for old rows with no category.
+    if category == "school_diaries":
+        query = {"$or": [{"category": "school_diaries"}, {"category": {"$exists": False}}]}
+    elif category:
+        query = {"category": category}
+
+    cursor = db.gallery.find(query).sort("uploadedAt", -1).skip(skip).limit(limit)
     return {
         "items": [serialize_doc(item) for item in cursor],
-        "total": db.gallery.count_documents({}),
+        "total": db.gallery.count_documents(query),
     }
 
 @router.post("/verify")
@@ -109,8 +130,31 @@ async def upload_media(
     file: UploadFile = File(...),
     title: str = Form(...),
     type: str = Form(...),
+    category: str = Form("school_diaries"),
+    isImportantGathering: bool = Form(False),
+    gatheringDate: str | None = Form(None),
+    description: str | None = Form(None),
     accessCodeRequired: bool = Form(True),
 ):
+    if type not in ALLOWED_MEDIA_TYPES:
+        raise HTTPException(status_code=422, detail="Invalid media type")
+
+    if category not in ALLOWED_CATEGORIES:
+        raise HTTPException(status_code=422, detail="Invalid gallery category")
+
+    cleaned_date = _clean_optional(gatheringDate)
+    cleaned_description = _clean_optional(description)
+
+    if category != "gatherings":
+        isImportantGathering = False
+        cleaned_date = None
+        cleaned_description = None
+    elif isImportantGathering and (not cleaned_date or not cleaned_description):
+        raise HTTPException(
+            status_code=422,
+            detail="Important gathering requires date and description",
+        )
+
     content = await file.read()
 
     cloudinary_public_id = None
@@ -122,6 +166,10 @@ async def upload_media(
     item = {
         "title": title,
         "type": type,
+        "category": category,
+        "isImportantGathering": isImportantGathering,
+        "gatheringDate": cleaned_date,
+        "description": cleaned_description,
         "url": file_url,
         "thumbnailUrl": thumbnail_url,
         "accessCodeRequired": accessCodeRequired,

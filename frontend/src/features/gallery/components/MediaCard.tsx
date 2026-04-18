@@ -81,7 +81,11 @@ export function MediaCard({ item, onDownload }: MediaCardProps) {
                       bg-gradient-to-t from-[#0b1333]/85 via-[#0b1333]/20 to-transparent
                       flex flex-col justify-end p-3">
         <p className="text-white text-[12px] font-bold mb-2 line-clamp-1">{item.title}</p>
-    
+        {item.category === 'gatherings' && item.description && (
+          <p className="text-white/90 text-[11px] leading-snug line-clamp-2">
+            {item.description}
+          </p>
+        )}
       </div>
     </motion.div>
   );

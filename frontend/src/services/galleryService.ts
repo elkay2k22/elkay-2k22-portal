@@ -1,19 +1,24 @@
 import api from './api';
 import { delay, store } from '@/mocks/mockData';
-import type { GalleryItem, GalleryResponse } from '@/types/gallery';
+import type { GalleryCategory, GalleryItem, GalleryResponse } from '@/types/gallery';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 export const galleryService = {
   /** GET /gallery */
-  getAll: async (page = 1, limit = 20): Promise<GalleryResponse> => {
+  getAll: async (page = 1, limit = 20, category?: GalleryCategory): Promise<GalleryResponse> => {
     if (USE_MOCK) {
       await delay();
       const start = (page - 1) * limit;
-      const items = store.gallery.slice(start, start + limit);
-      return { items, total: store.gallery.length };
+      const filtered = category
+        ? store.gallery.filter((item) => item.category === category)
+        : store.gallery;
+      const items = filtered.slice(start, start + limit);
+      return { items, total: filtered.length };
     }
-    return api.get<GalleryResponse>('/gallery/', { params: { page, limit } }).then((r) => r.data);
+    return api
+      .get<GalleryResponse>('/gallery/', { params: { page, limit, category } })
+      .then((r) => r.data);
   },
 
   /** POST /gallery/verify — compare against stored access code */
@@ -31,13 +36,37 @@ export const galleryService = {
   upload: async (_formData: FormData): Promise<GalleryItem> => {
     if (USE_MOCK) {
       await delay(800);
+      const title = String(_formData.get('title') ?? 'New Upload').trim() || 'New Upload';
+      const rawType = String(_formData.get('type') ?? 'image');
+      const type = rawType === 'video' ? 'video' : 'image';
+      const rawCategory = String(_formData.get('category') ?? 'school_diaries');
+      const category: GalleryCategory =
+        rawCategory === 'farewell' || rawCategory === 'gatherings'
+          ? rawCategory
+          : 'school_diaries';
+      const isImportantGathering =
+        category === 'gatherings' && String(_formData.get('isImportantGathering') ?? 'false') === 'true';
+      const gatheringDate = String(_formData.get('gatheringDate') ?? '').trim();
+      const description = String(_formData.get('description') ?? '').trim();
+      const accessCodeRequired = String(_formData.get('accessCodeRequired') ?? 'true') === 'true';
+
       const item: GalleryItem = {
         id: String(Date.now()),
-        title: 'New Upload',
-        type: 'image',
+        title,
+        type,
+        category,
+        isImportantGathering: category === 'gatherings' ? isImportantGathering : undefined,
+        gatheringDate:
+          category === 'gatherings' && isImportantGathering && gatheringDate
+            ? gatheringDate
+            : undefined,
+        description:
+          category === 'gatherings' && isImportantGathering && description
+            ? description
+            : undefined,
         url: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=1200&q=90',
         thumbnailUrl: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?w=400&q=70',
-        accessCodeRequired: true,
+        accessCodeRequired,
         uploadedAt: new Date().toISOString(),
       };
       store.gallery.unshift(item);
