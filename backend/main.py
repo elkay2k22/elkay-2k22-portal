@@ -29,3 +29,7 @@ app.include_router(settings.router, prefix="/api/v1/settings")
 @app.get("/")
 def home():
     return {"message": "API Running"}
+
+@app.get("/health")
+def health():
+    return {"message": "ok"}
