@@ -46,7 +46,59 @@ export function GalleryGrid({
       </div>
 
       {totalPages > 1 && onPageChange && (
-        <div className="flex items-center justify-center gap-1.5 flex-wrap">
+        <div className="space-y-2">
+          <div className="sm:hidden flex items-center justify-center gap-2">
+            <button
+              onClick={() => onPageChange(1)}
+              disabled={currentPage <= 1}
+              className="h-9 px-2.5 rounded-[10px] border border-[#e0e6f8] bg-white
+                         text-[13px] font-semibold text-[#4a5578] inline-flex items-center
+                         disabled:opacity-40 disabled:cursor-not-allowed"
+              aria-label="First page"
+              title="First page"
+            >
+              <ChevronsLeft size={14} />
+            </button>
+
+            <button
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage <= 1}
+              className="h-9 px-3 rounded-[10px] border border-[#e0e6f8] bg-white
+                         text-[13px] font-semibold text-[#4a5578] flex items-center gap-1
+                         disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft size={14} /> Prev
+            </button>
+
+            <span className="h-9 px-3 rounded-[10px] border border-[#dbe2f7] bg-[#f7f9ff]
+                             text-[12px] font-bold text-[#1a2c6b] inline-flex items-center">
+              Page {currentPage} / {totalPages}
+            </span>
+
+            <button
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage >= totalPages}
+              className="h-9 px-3 rounded-[10px] border border-[#e0e6f8] bg-white
+                         text-[13px] font-semibold text-[#4a5578] flex items-center gap-1
+                         disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              Next <ChevronRight size={14} />
+            </button>
+
+            <button
+              onClick={() => onPageChange(totalPages)}
+              disabled={currentPage >= totalPages}
+              className="h-9 px-2.5 rounded-[10px] border border-[#e0e6f8] bg-white
+                         text-[13px] font-semibold text-[#4a5578] inline-flex items-center
+                         disabled:opacity-40 disabled:cursor-not-allowed"
+              aria-label="Last page"
+              title="Last page"
+            >
+              <ChevronsRight size={14} />
+            </button>
+          </div>
+
+          <div className="hidden sm:flex items-center justify-center gap-1.5 flex-wrap">
           <button
             onClick={() => onPageChange(1)}
             disabled={currentPage <= 1}
@@ -111,6 +163,7 @@ export function GalleryGrid({
           >
             <ChevronsRight size={14} />
           </button>
+          </div>
         </div>
       )}
     </div>
