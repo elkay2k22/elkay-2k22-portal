@@ -13,7 +13,7 @@ import type { GalleryCategory, GalleryItem } from '@/types/gallery';
 const PAGE_SIZE = 20;
 const TABS: Array<{ key: GalleryCategory; label: string }> = [
   { key: 'school_diaries', label: 'School Diaries' },
-  { key: 'farewell', label: 'Farewell Days' },
+  { key: 'farewell', label: 'Farewell Day' },
   { key: 'gatherings', label: 'Gatherings' },
 ];
 
