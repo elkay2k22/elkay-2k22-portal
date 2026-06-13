@@ -20,6 +20,7 @@ export const MOCK_EVENTS: Event[] = [
       'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=600&q=80',
       'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=600&q=80',
     ],
+    category: 'Food Assistance',
     tags: ['food', 'eid', 'distribution'],
     createdAt: '2024-04-11T10:00:00Z',
   },
@@ -34,6 +35,7 @@ export const MOCK_EVENTS: Event[] = [
     images: [
       'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=600&q=80',
     ],
+    category: 'Healthcare',
     tags: ['health', 'medical', 'community'],
     createdAt: '2024-06-23T08:30:00Z',
   },
@@ -47,8 +49,9 @@ export const MOCK_EVENTS: Event[] = [
     amountSpent: 24000,
     images: [
       'https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&q=80',
-      'https://images.unsplash.com/photo-1509062522246-3755977927d7?w=600&q=80',
+      'https://images.unsplash.com/photo-1509062522246-3755977927d9?w=600&q=80',
     ],
+    category: 'Education',
     tags: ['education', 'children'],
     createdAt: '2024-07-16T09:00:00Z',
   },
@@ -63,6 +66,7 @@ export const MOCK_EVENTS: Event[] = [
     images: [
       'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&q=80',
     ],
+    category: 'Food Assistance',
     tags: ['ramadan', 'food', 'ration'],
     createdAt: '2025-03-19T07:00:00Z',
   },
@@ -77,6 +81,7 @@ export const MOCK_EVENTS: Event[] = [
     images: [
       'https://images.unsplash.com/photo-1547496502-affa22d38842?w=600&q=80',
     ],
+    category: 'Relief & Humanitarian Aid',
     tags: ['winter', 'relief', 'homeless'],
     createdAt: '2025-01-06T06:00:00Z',
   },
@@ -92,6 +97,7 @@ export const MOCK_EVENTS: Event[] = [
       'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=80',
       'https://images.unsplash.com/photo-1529543544282-ea669407fca3?w=600&q=80',
     ],
+    category: 'Community Development',
     tags: ['reunion', 'batch', 'planning'],
     createdAt: '2025-02-15T10:00:00Z',
   },

@@ -14,6 +14,7 @@ import { formatCurrency } from '@/utils/formatCurrency';
 import { SkeletonCard, ErrorState, EmptyState } from '@/components/ui/Loader';
 import { CalendarDays, MapPin, Trash2, Plus, UploadCloud, Pencil, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, X } from 'lucide-react';
 import { clsx } from 'clsx';
+import { EVENT_CATEGORIES } from '@/types/event';
 import type { Event } from '@/types/event';
 
 const schema = z.object({
@@ -22,6 +23,7 @@ const schema = z.object({
   location:    z.string().min(2, 'Location is required'),
   description: z.string().min(10, 'Description must be at least 10 characters'),
   amountSpent: z.coerce.number().min(0, 'Amount must be 0 or more'),
+  category:    z.string().optional(),
 });
 type FormValues = z.infer<typeof schema>;
 const PAGE_SIZE = 12;
@@ -54,6 +56,11 @@ function EventRow({
         <div className="flex items-center gap-3 text-xs text-gray-500 mt-1">
           {!!dateLabel && <span className="flex items-center gap-1"><CalendarDays size={11} /> {dateLabel}</span>}
           <span className="flex items-center gap-1"><MapPin size={11} /> {event.location}</span>
+          {event.category && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-600">
+              {event.category}
+            </span>
+          )}
         </div>
       </div>
       <div className="flex items-center gap-3 flex-shrink-0">
@@ -172,6 +179,7 @@ export default function ManageEvents() {
       location: event.location,
       description: event.description,
       amountSpent: event.amountSpent,
+      category: event.category ?? '',
     });
     setSelectedFiles([]);
     setFileError('');
@@ -188,6 +196,7 @@ export default function ManageEvents() {
       location: '',
       description: '',
       amountSpent: 0,
+      category: '',
     });
     setSelectedFiles([]);
     setFileError('');
@@ -247,6 +256,7 @@ export default function ManageEvents() {
 
   const onSubmit = async (values: FormValues) => {
     const date = values.date?.trim() || undefined;
+    const category = (values.category?.trim() || undefined) as Event['category'];
     let images: string[] = [...existingImages];
     if (selectedFiles.length) {
       const uploadedImages = await eventService.uploadImages(selectedFiles);
@@ -261,6 +271,7 @@ export default function ManageEvents() {
         location: values.location,
         description: values.description,
         amountSpent: values.amountSpent,
+        category,
         images,
       });
     } else {
@@ -270,6 +281,7 @@ export default function ManageEvents() {
         location:    values.location,
         description: values.description,
         amountSpent: values.amountSpent,
+        category,
         images,
       });
     }
@@ -412,6 +424,18 @@ export default function ManageEvents() {
             error={errors.location?.message}
             {...register('location')}
           />
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium text-gray-700">Category (optional)</label>
+            <select
+              className="w-full rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white"
+              {...register('category')}
+            >
+              <option value="">Select a category</option>
+              {EVENT_CATEGORIES.map((cat) => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+          </div>
           <div className="flex flex-col gap-1">
             <label className="text-sm font-medium text-gray-700">Description</label>
             <textarea

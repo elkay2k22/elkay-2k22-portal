@@ -1,11 +1,24 @@
+export const EVENT_CATEGORIES = [
+  'Healthcare',
+  'Food Assistance',
+  'Relief & Humanitarian Aid',
+  'Livelihood Support',
+  'Islamic Projects',
+  'Community Development',
+  'Education',
+] as const;
+
+export type EventCategory = (typeof EVENT_CATEGORIES)[number];
+
 export interface Event {
   id: string;
   title: string;
-  date?: string;        // ISO date string (optional for completed events)
+  date?: string;
   location: string;
   description: string;
   amountSpent: number;
-  images: string[];     // list of image URLs
+  images: string[];
+  category?: EventCategory;
   tags?: string[];
   createdAt?: string;
   updatedAt?: string;
@@ -18,6 +31,7 @@ export interface CreateEventPayload {
   description: string;
   amountSpent: number;
   images?: string[];
+  category?: EventCategory;
   tags?: string[];
 }
 

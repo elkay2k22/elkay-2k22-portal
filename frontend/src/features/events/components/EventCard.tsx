@@ -1,12 +1,23 @@
 import { motion } from 'framer-motion';
-import { Calendar, MapPin, IndianRupee, Tag } from 'lucide-react';
+import { Calendar, MapPin, IndianRupee, Tag, Heart, Utensils, HandHeart, Briefcase, Building2, Users, BookOpen } from 'lucide-react';
 import { formatDate } from '@/utils/dateFormatter';
 import { formatCurrency } from '@/utils/formatCurrency';
-import type { Event } from '@/types/event';
+import type { Event, EventCategory } from '@/types/event';
+
+const CATEGORY_META: Record<EventCategory, { icon: typeof Heart; label: string; bg: string; color: string }> = {
+  Healthcare: { icon: Heart, label: 'Healthcare', bg: '#fee2e2', color: '#dc2626' },
+  'Food Assistance': { icon: Utensils, label: 'Food Assistance', bg: '#fef3c7', color: '#d97706' },
+  'Relief & Humanitarian Aid': { icon: HandHeart, label: 'Relief & Humanitarian Aid', bg: '#e0f2fe', color: '#0284c7' },
+  'Livelihood Support': { icon: Briefcase, label: 'Livelihood Support', bg: '#dbeafe', color: '#2563eb' },
+  'Islamic Projects': { icon: Building2, label: 'Islamic Projects', bg: '#f3e8ff', color: '#7c3aed' },
+  'Community Development': { icon: Users, label: 'Community Development', bg: '#d1fae5', color: '#059669' },
+  Education: { icon: BookOpen, label: 'Education', bg: '#fce7f3', color: '#db2777' },
+};
 
 interface EventCardProps {
   event: Event;
   index?: number;
+  showCategory?: boolean;
 }
 
 const ACCENTS = [
@@ -17,7 +28,7 @@ const AMOUNT_STYLES = [
   { bg: '#eef1fb', color: '#1a2c6b' },
 ];
 
-export function EventCard({ event, index = 0 }: EventCardProps) {
+export function EventCard({ event, index = 0, showCategory = false }: EventCardProps) {
   const accent = ACCENTS[index % ACCENTS.length];
   const amtStyle = AMOUNT_STYLES[index % AMOUNT_STYLES.length];
   const dateLabel = formatDate(event.date);
@@ -89,6 +100,20 @@ export function EventCard({ event, index = 0 }: EventCardProps) {
           <p className="text-[13.5px] text-[#4a5578] leading-[1.7] line-clamp-3">
             {event.description}
           </p>
+
+          {/* Category badge (shown only when grouped view needs it) */}
+          {showCategory && event.category && (() => {
+            const meta = CATEGORY_META[event.category as EventCategory];
+            if (!meta) return null;
+            const Icon = meta.icon;
+            return (
+              <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-full w-fit"
+                style={{ background: meta.bg, color: meta.color }}>
+                <Icon size={10} />
+                {meta.label}
+              </span>
+            );
+          })()}
 
           {/* Tags */}
           {event.tags && event.tags.length > 0 && (
